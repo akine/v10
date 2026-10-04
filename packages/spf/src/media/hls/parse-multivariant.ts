@@ -375,6 +375,18 @@ export function parseMultivariantPlaylist(text: string, unresolved: AddressableO
       track.autoselect = rendition.autoselect;
     }
 
+    // An audio-only variant in this group that resolves to the same playlist is
+    // this rendition, not a second track. Keep the named rendition and the
+    // highest bandwidth advertised by its variants. A URI-less rendition is
+    // handled above, where the variant is the only track with a URL.
+    for (let index = audioOnlyTracks.length - 1; index >= 0; index--) {
+      const candidate = audioOnlyTracks[index]!;
+      if (candidate.groupId !== rendition.groupId || candidate.url !== track.url) continue;
+
+      track.bandwidth = Math.max(track.bandwidth, candidate.bandwidth);
+      audioOnlyTracks.splice(index, 1);
+    }
+
     return [track];
   });
 
